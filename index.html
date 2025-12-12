@@ -1,0 +1,2193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitising Trauma Scans Vetting | Prototype</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigation Tabs Styling */
+        .nav-tab {
+            transition: all 0.2s ease;
+            border-bottom: 3px solid transparent;
+            opacity: 0.7;
+            padding: 0 1.5rem;
+            cursor: pointer;
+        }
+
+        .nav-tab:hover {
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-tab.active {
+            opacity: 1;
+            border-bottom-color: #38bdf8;
+            background-color: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+
+        /* Page Views */
+        .page-view {
+            display: none;
+            padding-bottom: 4rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .page-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* CAROUSEL STYLING */
+        .carousel-viewport {
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+            transition: height 0.3s ease-out;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* Blur Overlay for WF2 & WF3 */
+        .blur-container {
+            position: relative;
+        }
+
+        .blur-content {
+            filter: blur(4px);
+            opacity: 0.5;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .blur-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .overlay-badge {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            font-weight: 600;
+            color: #475569;
+            text-align: center;
+        }
+
+        /* Focus Zone for Trauma Field in WF2 */
+        .focus-zone {
+            position: relative;
+            z-index: 20;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem -1rem;
+        }
+
+        /* Form Styling */
+        .clinical-form {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .clinical-form-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 700;
+            color: #1e293b;
+            background-color: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .clinical-form-body {
+            padding: 1.5rem;
+            /* Removed padding-bottom: 2rem; as buttons are moved */
+        }
+
+        .clinical-form-footer {
+            padding: 12px 16px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            background-color: #f8fafc;
+            /* Matches header bg */
+            gap: 12px;
+        }
+
+        /* Button Container spacing */
+        .manual-btn-container {
+            padding-bottom: 3rem !important;
+        }
+
+        /* Interactive Checkbox Row */
+        .criteria-row {
+            display: flex;
+            align-items: flex-start;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .criteria-row:last-child {
+            border-bottom: none;
+        }
+
+        .criteria-row:hover {
+            background-color: #f8fafc;
+        }
+
+        .criteria-check {
+            margin-top: 4px;
+            margin-right: 12px;
+            transform: scale(1.2);
+            cursor: pointer;
+            accent-color: #2563eb;
+        }
+
+        .criteria-label {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #334155;
+            cursor: pointer;
+        }
+
+        /* Order Form Specifics */
+        .input-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.25rem;
+        }
+
+        .input-label.required::after {
+            content: " *";
+            color: #ef4444;
+        }
+
+        .order-input {
+            width: 100%;
+            padding: 0.4rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            transition: border-color 0.2s;
+        }
+
+        .order-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px #3b82f6;
+        }
+
+        .section-header {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.25rem;
+            margin-top: 1rem;
+        }
+
+        .detail-check {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: #334155;
+        }
+
+        /* Progress Steps */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 0.5rem;
+        }
+
+        .step-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        .step-dot.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: #e2e8f0;
+            margin-top: 14px;
+        }
+
+        .step-line.active {
+            background: #93c5fd;
+        }
+
+        /* Search Box */
+        .epr-search-box {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            padding: 1.5rem;
+            margin: 1rem auto;
+            /* Reduced from 2rem */
+        }
+
+        .search-item {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .search-item:hover {
+            background-color: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        /* Pros/Cons Box - Card Style */
+        .pros-cons-box {
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            /* Reduced Gap */
+            width: 100%;
+            max-width: 800px;
+            /* Match form width */
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+
+        /* Blur Overlay Styles */
+        .blur-wrapper {
+            position: relative;
+        }
+
+        .blur-active {
+            filter: blur(5px);
+            pointer-events: none;
+            user-select: none;
+            opacity: 0.6;
+            transition: all 0.5s ease;
+        }
+
+        .blur-message-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem 2.5rem;
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            display: none;
+            min-width: 300px;
+        }
+
+        .blur-message-overlay.visible {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* Free Text Input for Scans */
+        .scan-notes {
+            display: none;
+            margin-top: 0.5rem;
+            margin-left: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .scan-notes.visible {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .scan-notes input {
+            width: 100%;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background-color: #fffbeb;
+            color: #78350f;
+        }
+
+        .scan-notes input:focus {
+            outline: none;
+            border-color: #f59e0b;
+            background-color: #fff;
+        }
+
+        /* Dynamic Fields Logic Styles */
+        .dynamic-field {
+            display: none;
+            margin-top: 0.25rem;
+        }
+
+        .dynamic-field.visible {
+            display: block;
+            animation: fadeIn 0.2s ease-out;
+        }
+    </style>
+</head>
+
+<body class="antialiased bg-slate-100">
+
+    <!-- Header (Sticky) -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3 mr-8">
+                <div class="bg-blue-600 w-8 h-8 rounded flex items-center justify-center"><i
+                        class="fa-solid fa-notes-medical text-white"></i></div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight tracking-wide">Digitising Trauma Scans Vetting</h1>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Implementation Plan & Prototype</p>
+                </div>
+            </div>
+            <nav class="flex h-full space-x-1 overflow-x-auto">
+                <button onclick="switchPage('page-proposal')" id="tab-proposal"
+                    class="nav-tab active h-full text-sm whitespace-nowrap">Proposal</button>
+                <button onclick="switchPage('page-workflow1')" id="tab-workflow1"
+                    class="nav-tab h-full text-sm whitespace-nowrap">Workflow 1</button>
+                <button onclick="switchPage('page-workflow2')" id="tab-workflow2"
+                    class="nav-tab h-full text-sm whitespace-nowrap">Workflow 2</button>
+                <button onclick="switchPage('page-workflow3')" id="tab-workflow3"
+                    class="nav-tab h-full text-sm whitespace-nowrap">Workflow 3</button>
+                <button onclick="switchPage('page-reference')" id="tab-reference"
+                    class="nav-tab h-full text-sm whitespace-nowrap">Criteria</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <!-- 1. PROPOSAL & ANALYSIS -->
+        <div id="page-proposal" class="page-view active">
+            <div class="max-w-6xl mx-auto py-12 px-6">
+                <!-- Header -->
+                <div class="text-center mb-16">
+                    <div
+                        class="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 mb-6 transition-transform hover:scale-105 cursor-default">
+                        <span class="text-xs font-bold text-blue-600 tracking-widest uppercase">Implementation
+                            Proposal</span>
+                    </div>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 mb-6 leading-tight">
+                        Digitising OOH <span
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Trauma
+                            Vetting</span>
+                    </h1>
+                    <p class="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                        Replacing manual paper forms with a streamlined, digital workflow for CT Head, C-Spine, and
+                        Trauma requests (20:00–08:00).
+                    </p>
+                </div>
+
+                <!-- 1. The Core Problem & Solution (Visual Comparison) -->
+                <div class="grid md:grid-cols-2 gap-8 mb-20">
+                    <!-- Current State -->
+                    <div
+                        class="bg-white rounded-2xl p-8 border border-red-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                        <div
+                            class="absolute top-0 right-0 p-16 bg-red-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110">
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
+                                    <i class="fa-solid fa-file-pen text-xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-slate-800">Current Friction</h3>
+                            </div>
+                            <ul class="space-y-5">
+                                <li class="flex gap-4 text-slate-700">
+                                    <div class="mt-1"><i class="fa-solid fa-person-walking text-red-400"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-900">Physical Delays</strong>
+                                        <span class="text-sm">Walking forms to Radiology causes clinically avoidable
+                                            delays.</span>
+                                    </div>
+                                </li>
+                                <li class="flex gap-4 text-slate-700">
+                                    <div class="mt-1"><i class="fa-solid fa-clipboard-question text-red-400"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-900">Inconsistent Data</strong>
+                                        <span class="text-sm">Paper forms lead to variable documentation of NICE
+                                            criteria.</span>
+                                    </div>
+                                </li>
+                                <li class="flex gap-4 text-slate-700">
+                                    <div class="mt-1"><i class="fa-solid fa-database text-red-400"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-900">Governance Gap</strong>
+                                        <span class="text-sm">No searchable digital audit trail for IR(ME)R
+                                            assurance.</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Future State -->
+                    <div
+                        class="bg-white rounded-2xl p-8 border border-emerald-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+                        <div
+                            class="absolute top-0 right-0 p-16 bg-emerald-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110">
+                        </div>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div
+                                    class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                    <i class="fa-solid fa-laptop-medical text-xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-slate-800">Proposed Solution</h3>
+                            </div>
+                            <ul class="space-y-5">
+                                <li class="flex gap-4 text-slate-700">
+                                    <div class="mt-1"><i class="fa-solid fa-bolt text-emerald-500"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-900">Instant Routing</strong>
+                                        <span class="text-sm">Direct digital request submission without leaving the
+                                            department.</span>
+                                    </div>
+                                </li>
+                                <li class="flex gap-4 text-slate-700">
+                                    <div class="mt-1"><i class="fa-solid fa-list-check text-emerald-500"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-900">Logic Gating</strong>
+                                        <span class="text-sm">Mandatory, structured forms ensure 100% NICE guideline
+                                            compliance.</span>
+                                    </div>
+                                </li>
+                                <li class="flex gap-4 text-slate-700">
+                                    <div class="mt-1"><i class="fa-solid fa-chart-line text-emerald-500"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-900">Automated Audit</strong>
+                                        <span class="text-sm">Full data capture enables real-time safety and performance
+                                            monitoring.</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Strategic Aims (with Chart) -->
+                <div class="bg-slate-50 rounded-3xl p-8 md:p-12 mb-20 border border-slate-200">
+                    <div class="grid lg:grid-cols-12 gap-12 items-center">
+                        <div class="lg:col-span-5">
+                            <div class="inline-block text-indigo-600 font-bold mb-2 uppercase text-sm tracking-wide">
+                                Impact Analysis</div>
+                            <h2 class="text-3xl font-bold text-slate-900 mb-6">Quantifiable Benefits</h2>
+                            <p class="text-slate-600 mb-8 leading-relaxed">
+                                Targeting significant improvements in both clinical efficiency and process compliance
+                                within the first 3 months of rollout.
+                            </p>
+
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                                    <div class="text-3xl font-black text-blue-600 mb-1">90%</div>
+                                    <div class="text-sm font-medium text-slate-500 uppercase tracking-wide">Digital
+                                        Adoption</div>
+                                </div>
+                                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                                    <div class="text-3xl font-black text-indigo-600 mb-1">-5m</div>
+                                    <div class="text-sm font-medium text-slate-500 uppercase tracking-wide">Time Per
+                                        Request</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                            <canvas id="aimChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Implementation Plan -->
+                <div class="mb-12">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-8 text-center">Phased Rollout Strategy</h2>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <!-- Phase 1 -->
+                        <div
+                            class="group relative bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <div
+                                class="absolute top-0 left-0 w-full h-1 bg-blue-500 rounded-t-2xl opacity-50 group-hover:opacity-100 transition-opacity">
+                            </div>
+                            <div class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-3">Phase 1</div>
+                            <h3
+                                class="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
+                                Technical Pilot</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">Small-scale prototype testing with 3-5
+                                users to validate logic and gather initial feedback.</p>
+                        </div>
+
+                        <!-- Phase 2 -->
+                        <div
+                            class="group relative bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <div
+                                class="absolute top-0 left-0 w-full h-1 bg-indigo-500 rounded-t-2xl opacity-50 group-hover:opacity-100 transition-opacity">
+                            </div>
+                            <div class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-3">Phase 2</div>
+                            <h3
+                                class="text-xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors">
+                                Night Pilot</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">Live deployment during OOH (20:00-08:00)
+                                for 2 weeks. Digital default with paper backup.</p>
+                        </div>
+
+                        <!-- Phase 3 -->
+                        <div
+                            class="group relative bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                            <div
+                                class="absolute top-0 left-0 w-full h-1 bg-emerald-500 rounded-t-2xl opacity-50 group-hover:opacity-100 transition-opacity">
+                            </div>
+                            <div class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-3">Phase 3</div>
+                            <h3
+                                class="text-xl font-bold text-slate-900 mb-3 group-hover:text-emerald-600 transition-colors">
+                                Full Rollout</h3>
+                            <p class="text-slate-500 text-sm leading-relaxed">Routine wide-scale use. Paper forms
+                                eliminated from standard workflow.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 2. WORKFLOW 1 (IDEAL) -->
+        <div id="page-workflow1" class="page-view">
+            <div class="carousel-viewport">
+                <div class="carousel-track" id="track-wf1">
+                    <!-- S1: SEARCH -->
+                    <div class="carousel-slide">
+
+                        <div class="epr-search-box text-center">
+                            <h2 class="text-2xl font-bold text-slate-800 mb-2">Order Entry</h2>
+                            <p class="text-slate-500 mb-6">Search for orderable procedures.</p>
+
+                            <!-- PATIENT TYPE TOGGLE -->
+                            <div class="flex justify-center mb-6">
+                                <div class="bg-slate-100 p-1 rounded-lg flex items-center">
+                                    <button onclick="setPatientType('adult')" id="btn-adult-wf1"
+                                        class="px-6 py-2 rounded-md text-sm font-bold transition bg-white text-slate-800 shadow-sm border border-slate-200 ring-1 ring-slate-100">Adult</button>
+                                    <button onclick="setPatientType('child')" id="btn-child-wf1"
+                                        class="px-6 py-2 rounded-md text-sm font-bold transition text-slate-500 hover:text-slate-700 hover:bg-slate-50">Child</button>
+                                </div>
+                            </div>
+                            <div class="w-full relative mb-4"><input type="text"
+                                    class="w-full p-4 border border-slate-300 rounded-lg text-lg pl-12 outline-none"
+                                    value="CT Trauma"><i
+                                    class="fa-solid fa-magnifying-glass absolute left-4 top-5 text-slate-400"></i>
+                            </div>
+                            <div class="w-full text-left">
+                                <p class="text-xs font-bold text-slate-400 uppercase mb-2">Matching
+                                    Results</p>
+                                <button onclick="nextSlide('track-wf1')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-blue-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-radiation"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-blue-900">CT Trauma</div>
+                                            <div class="text-xs text-blue-600">Radiology • CT</div>
+                                        </div>
+                                    </div><i class="fa-solid fa-chevron-right text-blue-300"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- S2: Order Form -->
+                    <div class="carousel-slide">
+                        <div id="order-form-wf1" class="w-full"></div>
+                    </div>
+                    <!-- S3: Forms -->
+                    <div class="carousel-slide">
+                        <div id="forms-container-wf1" class="w-full"></div>
+                    </div>
+                    <!-- S4: Success -->
+                    <div class="carousel-slide">
+                        <div id="success-container-wf1" class="w-full"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Pros/Cons Footer -->
+            <div class="pros-cons-box w-full">
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-green-700 font-bold mb-1"><i class="fa-solid fa-thumbs-up mr-2"></i>Pros
+                            (Ideal)
+                        </h4>
+                        <p class="text-sm text-slate-600">
+                            <strong>Efficiency:</strong> Single request covers all trauma scenarios, preventing
+                            duplicate orders.
+                            <br><strong>Safety:</strong> Smartest logic with built-in Poly-trauma override ensures no
+                            injuries are missed.
+                            <br><strong>Experience:</strong> Best user experience with guided, reactive forms.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-red-700 font-bold mb-1"><i class="fa-solid fa-thumbs-down mr-2"></i>Cons
+                        </h4>
+                        <p class="text-sm text-slate-600">
+                            <strong>Development:</strong> Requires the most IT resources to build the new combined
+                            request and distinct backend logic.
+                            <br><strong>Training:</strong> Significant change in practice for clinicians accustomed to
+                            individual scans.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. WORKFLOW 2 (GENERIC + TRAUMA FIELD) -->
+        <div id="page-workflow2" class="page-view">
+            <div class="carousel-viewport">
+                <div class="carousel-track" id="track-wf2">
+                    <!-- S1: SEARCH (GENERIC) -->
+                    <div class="carousel-slide">
+
+                        <div class="epr-search-box text-center">
+                            <h2 class="text-2xl font-bold text-slate-800 mb-2">Order Entry
+                            </h2>
+                            <p class="text-slate-500 mb-4">Search for standard CT scans.</p>
+
+                            <!-- PATIENT TYPE TOGGLE -->
+                            <div class="flex justify-center mb-6">
+                                <div class="bg-slate-100 p-1 rounded-lg flex items-center">
+                                    <button onclick="setPatientType('adult')" id="btn-adult-wf2"
+                                        class="px-6 py-2 rounded-md text-sm font-bold transition bg-white text-slate-800 shadow-sm border border-slate-200 ring-1 ring-slate-100">Adult</button>
+                                    <button onclick="setPatientType('child')" id="btn-child-wf2"
+                                        class="px-6 py-2 rounded-md text-sm font-bold transition text-slate-500 hover:text-slate-700 hover:bg-slate-50">Child</button>
+                                </div>
+                            </div>
+                            <div class="w-full relative mb-4"><input type="text"
+                                    class="w-full p-4 border border-slate-300 rounded-lg text-lg pl-12 outline-none"
+                                    placeholder="Search..." value="CT" onkeyup="filterOrders(this.value, 'list-wf2')"><i
+                                    class="fa-solid fa-magnifying-glass absolute left-4 top-5 text-slate-400"></i>
+                            </div>
+                            <div id="list-wf2" class="w-full text-left space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                                <!-- Expanded List -->
+                                <button onclick="setupWf2('head')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-brain"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800">CT Head</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('cspine')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-bone"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800">CT Cervical Spine</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('tspine')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-bone"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800">CT Thoracic Spine</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('lspine')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-bone"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800">CT Lumbar Spine</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('chest')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-lungs"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800">CT Chest</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('abdomen')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-user-md"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800">CT Abdomen</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('pelvis')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-child-reaching"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800">CT Pelvis</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('cap')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-layer-group"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800">CT Chest/Abdomen/Pelvis</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- S2: Order Form -->
+                    <div class="carousel-slide">
+                        <div id="order-form-wf2" class="w-full"></div>
+                    </div>
+                    <!-- S3: Forms -->
+                    <div class="carousel-slide">
+                        <div id="forms-container-wf2" class="w-full"></div>
+                    </div>
+                    <!-- S4: Success -->
+                    <div class="carousel-slide">
+                        <div id="success-container-wf2" class="w-full"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Pros/Cons Footer -->
+            <div class="pros-cons-box w-full">
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-green-700 font-bold mb-1"><i class="fa-solid fa-thumbs-up mr-2"></i>Pros
+                            (Least Changes)</h4>
+                        <p class="text-sm text-slate-600">
+                            <strong>Familiarity:</strong> Uses existing order catalog, so clinicians recognize the
+                            names.
+                            <br><strong>Speed:</strong> Minimal disruption to current workflow logic in the short term.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-red-700 font-bold mb-1"><i class="fa-solid fa-thumbs-down mr-2"></i>Cons
+                        </h4>
+                        <p class="text-sm text-slate-600">
+                            <strong>Maintenance:</strong> Requires modifying *every* existing generic order form (Head,
+                            Chest, Abdo, etc.) individually.
+                            <br><strong>Compliance:</strong> Relies entirely on user honesty to select 'Yes' for Trauma
+                            triggers; high risk of bypass.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. WORKFLOW 3 (SPECIFIC TRAUMA ENTRIES) -->
+        <div id="page-workflow3" class="page-view">
+            <div class="carousel-viewport">
+                <div class="carousel-track" id="track-wf3">
+                    <!-- S1: SEARCH (SPECIFIC) -->
+                    <div class="carousel-slide">
+
+                        <div class="epr-search-box text-center">
+                            <h2 class="text-2xl font-bold text-slate-800 mb-2">Order Entry
+                            </h2>
+                            <p class="text-slate-500 mb-4">Search for specific Trauma entries.</p>
+
+                            <!-- PATIENT TYPE TOGGLE -->
+                            <div class="flex justify-center mb-6">
+                                <div class="bg-slate-100 p-1 rounded-lg flex items-center">
+                                    <button onclick="setPatientType('adult')" id="btn-adult-wf3"
+                                        class="px-6 py-2 rounded-md text-sm font-bold transition bg-white text-slate-800 shadow-sm border border-slate-200 ring-1 ring-slate-100">Adult</button>
+                                    <button onclick="setPatientType('child')" id="btn-child-wf3"
+                                        class="px-6 py-2 rounded-md text-sm font-bold transition text-slate-500 hover:text-slate-700 hover:bg-slate-50">Child</button>
+                                </div>
+                            </div>
+                            <div class="w-full relative mb-4"><input type="text"
+                                    class="w-full p-4 border border-slate-300 rounded-lg text-lg pl-12 outline-none"
+                                    placeholder="Search..." value="Trauma"
+                                    onkeyup="filterOrders(this.value, 'list-wf3')"><i
+                                    class="fa-solid fa-magnifying-glass absolute left-4 top-5 text-slate-400"></i>
+                            </div>
+                            <div id="list-wf3" class="w-full text-left space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                                <button onclick="setupWf3('head')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-brain"></i>
+                                        </div>
+                                        <div class="font-bold text-purple-900">CT Head Trauma</div>
+                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                </button>
+                                <button onclick="setupWf3('cspine')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-bone"></i>
+                                        </div>
+                                        <div class="font-bold text-purple-900">CT Cervical Spine Trauma
+                                        </div>
+                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                </button>
+                                <button onclick="setupWf3('tspine')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-bone"></i>
+                                        </div>
+                                        <div class="font-bold text-purple-900">CT Thoracic Spine Trauma
+                                        </div>
+                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                </button>
+                                <button onclick="setupWf3('lspine')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-bone"></i>
+                                        </div>
+                                        <div class="font-bold text-purple-900">CT Lumbar Spine Trauma
+                                        </div>
+                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                </button>
+                                <button onclick="setupWf3('chest')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-lungs"></i>
+                                        </div>
+                                        <div class="font-bold text-purple-900">CT Chest Trauma</div>
+                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                </button>
+                                <button onclick="setupWf3('abdomen')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-user-md"></i>
+                                        </div>
+                                        <div class="font-bold text-purple-900">CT Abdomen Trauma</div>
+                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                </button>
+                                <button onclick="setupWf3('pelvis')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-child-reaching"></i>
+                                        </div>
+                                        <div class="font-bold text-purple-900">CT Pelvis Trauma</div>
+                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                </button>
+                                <button onclick="setupWf3('cap')" class="search-item">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            <i class="fa-solid fa-layer-group"></i>
+                                        </div>
+                                        <div class="font-bold text-purple-900">CT Chest/Abdomen/Pelvis Trauma</div>
+                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- S2: Order Form (BLURRED FOR WF3) -->
+                    <div class="carousel-slide">
+                        <div id="order-form-wf3" class="w-full"></div>
+                    </div>
+                    <!-- S3: Forms -->
+                    <div class="carousel-slide">
+                        <div id="forms-container-wf3" class="w-full"></div>
+                    </div>
+                    <!-- S4: Success -->
+                    <div class="carousel-slide">
+                        <div id="success-container-wf3" class="w-full"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Pros/Cons Footer -->
+            <div class="pros-cons-box w-full">
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-green-700 font-bold mb-1"><i class="fa-solid fa-thumbs-up mr-2"></i>Pros
+                            (Simplest)</h4>
+                        <p class="text-sm text-slate-600">
+                            <strong>Simplicity:</strong> Easiest to implement technically. Just adds new orderables to
+                            the list.
+                            <br><strong>Targeted:</strong> Logic is tied directly to the specific item, reducing
+                            complexity.
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-red-700 font-bold mb-1"><i class="fa-solid fa-thumbs-down mr-2"></i>Cons
+                        </h4>
+                        <p class="text-sm text-slate-600">
+                            <strong>Clutter:</strong> Bloats the order catalog with duplicates (Normal vs Trauma
+                            versions).
+                            <br><strong>Error Risk:</strong> Clinicians might accidentally or intentionally select the
+                            wrong version to avoid the vetting form.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. CRITERIA (REFACTORED CARDS) -->
+        <div id="page-reference" class="page-view">
+            <div class="max-w-6xl mx-auto px-6 py-10">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-4">Criteria</h2>
+                    <p class="text-slate-600 max-w-2xl mx-auto">Click a section below to view the
+                        detailed clinical criteria derived from national and local guidelines.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- CT HEAD ADULT -->
+                    <button onclick="openGuideline('modal-head-adult')"
+                        class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-blue-300 transition group text-left h-full flex flex-col">
+                        <div
+                            class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-brain text-blue-600 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">CT Head (Adult)</h3>
+                        <p class="text-slate-500 text-xs mb-3 flex-grow">NICE NG232 criteria for patients ≥16 years.</p>
+                        <div class="text-blue-600 font-bold text-xs uppercase tracking-wide">View Criteria <i
+                                class="fa-solid fa-arrow-right ml-1"></i></div>
+                    </button>
+
+                    <!-- CT HEAD CHILD -->
+                    <button onclick="openGuideline('modal-head-child')"
+                        class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-purple-300 transition group text-left h-full flex flex-col">
+                        <div
+                            class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-child text-purple-600 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">CT Head (Child)</h3>
+                        <p class="text-slate-500 text-xs mb-3 flex-grow">NICE NG232 criteria for patients < 16
+                                years.</p>
+                                <div class="text-purple-600 font-bold text-xs uppercase tracking-wide">View Criteria <i
+                                        class="fa-solid fa-arrow-right ml-1"></i></div>
+                    </button>
+
+                    <!-- CT C-SPINE ADULT -->
+                    <button onclick="openGuideline('modal-cspine-adult')"
+                        class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-indigo-300 transition group text-left h-full flex flex-col">
+                        <div
+                            class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-bone text-indigo-600 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">CT Cervical Spine (Adult)</h3>
+                        <p class="text-slate-500 text-xs mb-3 flex-grow">NICE NG232 criteria for patients ≥16 years.</p>
+                        <div class="text-indigo-600 font-bold text-xs uppercase tracking-wide">View Criteria <i
+                                class="fa-solid fa-arrow-right ml-1"></i></div>
+                    </button>
+
+                    <!-- CT C-SPINE CHILD -->
+                    <button onclick="openGuideline('modal-cspine-child')"
+                        class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-pink-300 transition group text-left h-full flex flex-col">
+                        <div
+                            class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-child-reaching text-pink-600 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">CT Cervical Spine (Child)</h3>
+                        <p class="text-slate-500 text-xs mb-3 flex-grow">NICE NG232 criteria for patients < 16
+                                years.</p>
+                                <div class="text-pink-600 font-bold text-xs uppercase tracking-wide">View Criteria <i
+                                        class="fa-solid fa-arrow-right ml-1"></i></div>
+                    </button>
+
+                    <!-- CT TRAUMA -->
+                    <button onclick="openGuideline('modal-trauma')"
+                        class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-lg hover:border-red-300 transition group text-left h-full flex flex-col">
+                        <div
+                            class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-truck-medical text-red-600 text-lg"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-900 mb-1">CT Trauma (Adult)</h3>
+                        <p class="text-slate-500 text-xs mb-3 flex-grow">Local Trauma Protocol.</p>
+                        <div class="text-red-600 font-bold text-xs uppercase tracking-wide">View Criteria <i
+                                class="fa-solid fa-arrow-right ml-1"></i></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GUIDELINE MODALS -->
+
+        <!-- MODAL: CT HEAD -->
+        <!-- MODAL: CT HEAD ADULT -->
+        <div id="modal-head-adult" class="fixed inset-0 z-[100] hidden items-center justify-center">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeGuideline('modal-head-adult')">
+            </div>
+            <div
+                class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4 animate-[fadeIn_0.2s_ease-out]">
+                <div class="sticky top-0 bg-white border-b border-slate-100 p-4 flex justify-between items-center z-10">
+                    <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2"><i
+                            class="fa-solid fa-brain text-blue-600"></i> CT Head (Adult ≥16)</h3>
+                    <button onclick="closeGuideline('modal-head-adult')"
+                        class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition"><i
+                            class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6">
+                    <ul class="list-disc pl-5 space-y-3 text-sm text-slate-700 leading-relaxed">
+                        <li>Any of these risk factors is present: GCS score of 12 or less on initial
+                            assessment, GCS score of less than 15 at 2 hours after the injury,
+                            suspected open or depressed skull fracture, any sign of basal skull fracture
+                            (haemotympanum, 'panda' eyes, cerebrospinal fluid leakage from the ear or nose,
+                            Battle's sign), post-traumatic seizure, focal neurological deficit, more
+                            than 1 episode of vomiting.</li>
+                        <li>There is loss of consciousness or amnesia since the head injury, AND any of
+                            these risk factors are present: age 65 years or over, any bleeding or clotting
+                            disorders, dangerous mechanism of injury (a pedestrian or cyclist struck by a
+                            motor vehicle, an occupant ejected from a motor vehicle, or fall from a height
+                            of more than 1 m or 5 stairs), more than 30 minutes’ retrograde amnesia.
+                        </li>
+                        <li>They are taking anticoagulants or antiplatelets (excluding aspirin
+                            monotherapy).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: CT HEAD CHILD -->
+        <div id="modal-head-child" class="fixed inset-0 z-[100] hidden items-center justify-center">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeGuideline('modal-head-child')">
+            </div>
+            <div
+                class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4 animate-[fadeIn_0.2s_ease-out]">
+                <div class="sticky top-0 bg-white border-b border-slate-100 p-4 flex justify-between items-center z-10">
+                    <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2"><i
+                            class="fa-solid fa-child text-purple-600"></i> CT Head (Child < 16)</h3>
+                            <button onclick="closeGuideline('modal-head-child')"
+                                class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition"><i
+                                    class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6">
+                    <ul class="list-disc pl-5 space-y-3 text-sm text-slate-700 leading-relaxed">
+                        <li>Any of these risk factors is present: suspicion of non-accidental
+                            injury, post-traumatic seizure but no history of epilepsy, GCS score of
+                            less than 14 (or < 15 if < 1 year old), GCS score of less than 15 at 2 hours after the
+                                injury, suspected open or depressed skull fracture or tense fontanelle, focal
+                                neurological deficit, any sign of basal skull fracture, bruise/swelling/laceration> 5 cm
+                                on the head (< 1 year old).</li>
+                        <li>More than 1 of these risk factors is present: loss of consciousness > 5
+                            mins (witnessed), bleeding/clotting disorders, abnormal drowsiness, 3 or
+                            more vomiting episodes, dangerous mechanism, amnesia > 5 mins.
+                        </li>
+                        <li>Only 1 of the above risk factors is present AND: GCS < 15, further vomiting, or further
+                                drowsiness while observing.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: CT CSPINE ADULT -->
+        <div id="modal-cspine-adult" class="fixed inset-0 z-[100] hidden items-center justify-center">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                onclick="closeGuideline('modal-cspine-adult')">
+            </div>
+            <div
+                class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4 animate-[fadeIn_0.2s_ease-out]">
+                <div class="sticky top-0 bg-white border-b border-slate-100 p-4 flex justify-between items-center z-10">
+                    <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2"><i
+                            class="fa-solid fa-bone text-indigo-600"></i> CT Cervical Spine (Adult ≥16)</h3>
+                    <button onclick="closeGuideline('modal-cspine-adult')"
+                        class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition"><i
+                            class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6">
+                    <ul class="list-disc pl-5 space-y-3 text-sm text-slate-700 leading-relaxed">
+                        <li>High-risk factors: GCS 12 or less, intubation, definitive diagnosis needed
+                            urgently, clinical suspicion and other body areas being scanned, alert/stable
+                            with suspicion AND (age ≥ 65, dangerous mechanism, focal peripheral deficit,
+                            paraesthesia).</li>
+                        <li>Suspicion of injury AND predisposing condition (e.g., axial spondyloarthritis).
+                        </li>
+                        <li>Any low-risk factors NOT present (simple rear-end MVC, sitting in ED,
+                            ambulatory, no midline tenderness, delayed neck pain) indicating unsafe to
+                            assess range of movement.</li>
+                        <li>On safe assessment, cannot rotate neck 45 degrees.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: CT CSPINE CHILD -->
+        <div id="modal-cspine-child" class="fixed inset-0 z-[100] hidden items-center justify-center">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+                onclick="closeGuideline('modal-cspine-child')">
+            </div>
+            <div
+                class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4 animate-[fadeIn_0.2s_ease-out]">
+                <div class="sticky top-0 bg-white border-b border-slate-100 p-4 flex justify-between items-center z-10">
+                    <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2"><i
+                            class="fa-solid fa-child-reaching text-pink-600"></i> CT C-Spine (Child < 16)</h3>
+                            <button onclick="closeGuideline('modal-cspine-child')"
+                                class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition"><i
+                                    class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6">
+                    <ul class="list-disc pl-5 space-y-3 text-sm text-slate-700 leading-relaxed">
+                        <li>High-risk factors: GCS 12 or less, intubation, definitive diagnosis
+                            needed urgently, focal peripheral signs, clinical suspicion and other
+                            body areas being scanned, paraesthesia.</li>
+                        <li>Suspicion of injury AND (dangerous mechanism OR predisposing condition)
+                            AND strong clinical suspicion/inadequate X-rays/bony injury identified.
+                        </li>
+                        <li>Low-risk factors NOT present AND strong clinical suspicion/inadequate
+                            X-rays/bony injury.</li>
+                        <li>Cannot rotate neck 45 degrees AND strong clinical suspicion/inadequate
+                            X-rays/bony injury.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: CT TRAUMA -->
+        <div id="modal-trauma" class="fixed inset-0 z-[100] hidden items-center justify-center">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeGuideline('modal-trauma')">
+            </div>
+            <div
+                class="relative bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4 animate-[fadeIn_0.2s_ease-out]">
+                <div class="sticky top-0 bg-white border-b border-slate-100 p-4 flex justify-between items-center z-10">
+                    <h3 class="font-bold text-lg text-slate-900 flex items-center gap-2"><i
+                            class="fa-solid fa-truck-medical text-red-600"></i> CT Trauma Criteria
+                        (Adults ≥18)</h3>
+                    <button onclick="closeGuideline('modal-trauma')"
+                        class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition"><i
+                            class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="p-6 text-sm text-slate-700 grid md:grid-cols-2 gap-6">
+                    <div><strong class="block text-slate-900 mb-2 uppercase text-xs">Mechanism</strong>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>Motorcycle/Cyclist/e-scooter > 15 mph</li>
+                            <li>Pedestrian impact > 15 mph</li>
+                            <li>Fall from horse</li>
+                            <li>Rollover / bullseye</li>
+                            <li>Fall > 2m or > 6 stairs</li>
+                        </ul>
+                    </div>
+                    <div><strong class="block text-slate-900 mb-2 uppercase text-xs">Injuries</strong>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>Sig. injury ≥ 2 regions</li>
+                            <li>Penetrating / Blast</li>
+                            <li>Open # / amputation</li>
+                            <li>Burns > 15%</li>
+                            <li>Suspected spinal cord injury</li>
+                        </ul>
+                    </div>
+                    <div><strong class="block text-slate-900 mb-2 uppercase text-xs">Physiology</strong>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>SBP < 80 mmHg</li>
+                            <li>GCS < 8</li>
+                            <li>SpO₂ < 90% on O2</li>
+                            <li>Intubation / Decompression</li>
+                            <li>Transfusion needed</li>
+                        </ul>
+                    </div>
+                    <div><strong class="block text-slate-900 mb-2 uppercase text-xs">Other</strong>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>Age > 65 / Frailty > 4</li>
+                            <li>Anticoagulation</li>
+                            <li>Comorbidities / Non-verbal</li>
+                            <li>Unwitnessed / Inadequate history</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    </main>
+
+    <!-- TEMPLATES -->
+
+    <!-- STANDARD ORDER FORM TEMPLATE -->
+    <template id="tpl-order-form">
+        <div class="clinical-form animate-[fadeIn_0.3s_ease-out]">
+            <div class="clinical-form-header">
+                <div class="flex items-center gap-2"><i class="fa-regular fa-clipboard text-blue-600"></i><span>New
+                        Order Request</span></div>
+
+            </div>
+            <div class="clinical-form-body space-y-4 relative">
+                <!-- BLUR OVERLAY MESSAGE -->
+                <div id="blur-message" class="blur-message-overlay">
+                    <div
+                        class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-200">
+                        <i class="fa-solid fa-lock text-slate-400 text-xl"></i>
+                    </div>
+                    <p class="font-bold text-slate-800 mb-1">Standard Form Sections</p>
+                    <p class="text-sm text-slate-500">Same as current order form.</p>
+                </div>
+
+                <!-- EXTRA TRAUMA FIELD FOR WF2 (MOVED TO TOP) -->
+                <div id="trauma-field-wf2" class="hidden mb-6">
+                    <div class="focus-zone mt-0">
+                        <label class="block text-sm font-bold text-blue-800 mb-2"><i
+                                class="fa-solid fa-triangle-exclamation mr-2"></i>Is this a Trauma Case?</label>
+                        <div class="flex gap-4">
+                            <label
+                                class="flex items-center gap-2 cursor-pointer bg-blue-50 px-4 py-2 rounded-md border border-blue-200 hover:bg-blue-100 transition"><input
+                                    type="radio" name="trauma-check" value="yes"
+                                    onchange="checkTraumaTrigger(this.value)" class="accent-blue-600 font-bold"> <span
+                                    class="text-blue-900 font-bold">Yes</span></label>
+                            <label
+                                class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-md border border-slate-200 hover:bg-slate-50 transition"><input
+                                    type="radio" name="trauma-check" value="no"
+                                    onchange="checkTraumaTrigger(this.value)" class="accent-slate-500"> <span
+                                    class="text-slate-700">No</span></label>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="form-content-wrapper" class="blur-wrapper relative">
+                    <div class="flex gap-4 mb-4">
+                        <div class="w-1/3"><label class="input-label">Priority</label><select
+                                class="order-input bg-red-50 text-red-700 font-bold border-red-200">
+                                <option>Urgent (< 1 hour)</option>
+                                <option>Routine</option>
+                            </select></div>
+                        <div class="w-1/3"><label class="input-label">Requested Date</label><input type="date"
+                                class="order-input" id="req-date"></div>
+                        <div class="w-1/3"><label class="input-label">Requested Time</label><input type="time"
+                                class="order-input" id="req-time"></div>
+                    </div>
+
+                    <!-- DYNAMIC SCANS SECTION -->
+                    <div id="dynamic-scans-container" class="mb-4">
+                        <div class="section-header">Requested Procedures</div>
+                        <!-- Injected via JS -->
+                    </div>
+
+                    <div><label class="input-label required">Reason for Exam / Clinical Question</label><textarea
+                            class="order-input h-20"
+                            placeholder="State the clinical question to be answered..."></textarea></div>
+                    <div class="mt-4"><label class="input-label required">Clinical History</label><textarea
+                            class="order-input h-16" placeholder="Mechanism of injury, current symptoms..."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4 mt-4">
+                        <div>
+                            <label class="input-label">Patient Transport</label>
+                            <select class="order-input">
+                                <option>Trolley (Default for Trauma)</option>
+                                <option>Wheelchair</option>
+                                <option>Walking</option>
+                                <option>Bed</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label required">Pregnancy Status</label>
+                            <select class="order-input" id="preg-status" onchange="toggleLMP(this.value)">
+                                <option value="unknown">Unknown</option>
+                                <option value="no">No</option>
+                                <option value="yes">Yes</option>
+                                <option value="na">N/A</option>
+                                <option value="bypass">Bypass</option>
+                            </select>
+                            <div id="lmp-container" class="dynamic-field"><label class="input-label mt-2">LMP
+                                    (Free Text)</label><input type="text" class="order-input"
+                                    placeholder="e.g. 2 weeks ago"></div>
+                        </div>
+                        <div>
+                            <label class="input-label required">Renal Impairment</label>
+                            <select class="order-input">
+                                <option value="no">No</option>
+                                <option value="yes">Yes</option>
+                                <option value="unknown">Unknown</option>
+                                <option value="bypass">Bypass</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 mt-4">
+                        <!-- Renal Moved Up -->
+                        <div class="detail-check"><input type="checkbox"> Contrast Allergy</div>
+
+                        <div class="detail-check"><input type="checkbox" checked> Trauma Mattress</div>
+                        <div class="detail-check"><input type="checkbox"> IV Cannula</div>
+                        <div class="detail-check"><input type="checkbox"> 1-to-1 Nursing</div>
+                    </div>
+
+                    <div class="flex gap-4 pt-2 mt-4">
+                        <div class="w-1/2"><label class="input-label">Bleep / Contact</label><input type="text"
+                                class="order-input" placeholder="e.g. 1234"></div>
+                        <div class="w-1/2"><label class="input-label">Senior Decision Maker</label><input type="text"
+                                class="order-input" placeholder="Consultant / Registrar Name"></div>
+                    </div>
+                    <!-- Footer Buttons moved out of body -->
+                </div>
+                <div
+                    class="clinical-form-footer flex justify-between bg-slate-50 p-4 border-t border-slate-100 rounded-b-xl">
+                    <button onclick="prevSlide('track-'+currentWorkflow)"
+                        class="px-4 py-2 rounded text-slate-600 hover:bg-slate-200 font-medium text-sm transition">Back</button>
+                    <button onclick="processOrderAndNext()"
+                        class="px-6 py-2 rounded bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-sm transition text-sm flex items-center gap-2">
+                        Next <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+    </template>
+
+    <!-- SUCCESS TEMPLATE -->
+    <!-- SUCCESS TEMPLATE -->
+    <template id="tpl-success">
+        <div class="clinical-form animate-[fadeIn_0.5s_ease-out]">
+            <div class="clinical-form-header bg-green-50 text-green-900 border-green-100">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check"></i><span>Order
+                        Submitted</span></div>
+            </div>
+            <div class="clinical-form-body bg-white p-8 text-center">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"><i
+                        class="fa-solid fa-check text-3xl text-green-600"></i></div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Order Placed Successfully</h2>
+                <p class="text-slate-500 mb-8 max-w-md mx-auto">The request has been submitted to Radiology. The
+                    eligibility
+                    criteria have been recorded for audit.</p>
+            </div>
+            <div class="clinical-form-footer justify-center bg-slate-50 p-4">
+                <button onclick="location.reload()"
+                    class="px-6 py-2 rounded bg-slate-800 text-white font-bold hover:bg-slate-900 transition shadow-sm">Start
+                    New Workflow Demo</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- 3A (HEAD ADULT) -->
+    <template id="tpl-3a">
+        <div class="clinical-form animate-[fadeIn_0.3s_ease-out] mb-6 border-l-4 border-l-blue-500">
+            <div class="clinical-form-header bg-blue-50 text-blue-900 border-blue-100">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-brain"></i><span>CT Head Eligibility (Adult
+                        ≥16)</span></div>
+                <div class="text-xs bg-white px-2 py-1 rounded border border-blue-200">NICE NG232</div>
+            </div>
+            <div class="clinical-form-body bg-slate-50/50">
+                <p class="text-sm font-semibold text-slate-700 mb-3 ml-1">Select at least one indication:</p>
+                <div class="space-y-1">
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">GCS ≤ 12 on initial assessment</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">GCS < 15 at 2 hours post-injury</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Suspected open or depressed skull fracture</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Base of skull fracture signs (haemotympanum, panda eyes, CSF leak,
+                            Battle's)</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Post-traumatic seizure</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Focal neurological deficit</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">More than 1 episode of vomiting</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Taking anticoagulants/antiplatelets (excl. aspirin
+                            alone)</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Loss of consciousness/amnesia AND (Age ≥ 65 OR Bleeding disorder OR
+                            Dangerous mechanism OR Retrograde amnesia > 30mins)</span></label>
+                    <label class="criteria-row border-t border-slate-200 mt-2 pt-2 bg-red-50/50"><input type="checkbox"
+                            class="criteria-check"><span class="criteria-label font-bold text-red-700">Does not fulfil
+                            NICE criteria (Must justify in 'Reason for Exam')</span></label>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 3B (HEAD CHILD) -->
+    <template id="tpl-3b">
+        <div class="clinical-form animate-[fadeIn_0.3s_ease-out] mb-6 border-l-4 border-l-purple-500">
+            <div class="clinical-form-header bg-purple-50 text-purple-900 border-purple-100">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-child"></i><span>CT Head Eligibility (Child
+                        &lt;16)</span>
+                </div>
+                <div class="text-xs bg-white px-2 py-1 rounded border border-purple-200">NICE NG232</div>
+            </div>
+            <div class="clinical-form-body bg-slate-50/50">
+                <p class="text-sm font-semibold text-slate-700 mb-3 ml-1">Select at least one indication:</p>
+                <div class="space-y-1">
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Suspicion of NAI</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Post-traumatic seizure (no epilepsy hx)</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">GCS < 14 (or < 15 if under 1y)</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">GCS < 15 at 2h post-injury</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Suspected open/depressed skull # or tense fontanelle</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Base of skull # signs</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Focal neurological deficit</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Bruise/swelling/laceration > 5cm on head (< 1y)</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Dangerous Mechanism/LOC >5m/Amnesia >5m/Vomiting ≥3 (if ≥1
+                            present)</span></label>
+                    <label class="criteria-row border-t border-slate-200 mt-2 pt-2 bg-red-50/50"><input type="checkbox"
+                            class="criteria-check"><span class="criteria-label font-bold text-red-700">Does not fulfil
+                            NICE criteria (Must justify)</span></label>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 3C (SPINE ADULT) -->
+    <template id="tpl-3c">
+        <div class="clinical-form animate-[fadeIn_0.3s_ease-out] mb-6 border-l-4 border-l-blue-500">
+            <div class="clinical-form-header bg-blue-50 text-blue-900 border-blue-100">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-bone"></i><span>CT Cervical Spine Eligibility
+                        (Adult
+                        ≥16)</span></div>
+                <div class="text-xs bg-white px-2 py-1 rounded border border-blue-200">NICE NG232</div>
+            </div>
+            <div class="clinical-form-body bg-slate-50/50">
+                <div class="space-y-1">
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">GCS ≤ 12 initial</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Intubated</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Focal peripheral neurological deficit</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Paraesthesia in limbs</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Definitive diagnosis needed urgently</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Other body areas being scanned for trauma</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Alert (GCS 15) AND (Age ≥ 65 OR Dangerous mechanism)</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Safe assessment failed (cannot rotate neck 45°)</span></label>
+                    <label class="criteria-row border-t border-slate-200 mt-2 pt-2 bg-red-50/50"><input type="checkbox"
+                            class="criteria-check"><span class="criteria-label font-bold text-red-700">Does not fulfil
+                            NICE criteria (Must justify)</span></label>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 3D (SPINE CHILD) -->
+    <template id="tpl-3d">
+        <div class="clinical-form animate-[fadeIn_0.3s_ease-out] mb-6 border-l-4 border-l-purple-500">
+            <div class="clinical-form-header bg-purple-50 text-purple-900 border-purple-100">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-child-reaching"></i><span>CT Cervical Spine
+                        Eligibility (Child &lt;16)</span>
+                </div>
+                <div class="text-xs bg-white px-2 py-1 rounded border border-purple-200">NICE NG232</div>
+            </div>
+            <div class="clinical-form-body bg-slate-50/50">
+                <div class="space-y-1">
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">GCS ≤ 12 initial</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Intubated</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Focal peripheral neurological deficit / Paraesthesia</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Other body areas being scanned for trauma</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Dangerous Mechanism / Predisposing Condition AND Clinical
+                            Suspicion</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Clinical diagnosis of bony injury / Inadequate X-rays</span></label>
+                    <label class="criteria-row border-t border-slate-200 mt-2 pt-2 bg-red-50/50"><input type="checkbox"
+                            class="criteria-check"><span class="criteria-label font-bold text-red-700">Does not fulfil
+                            NICE criteria (Must justify)</span></label>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 3E (TRAUMA BODY) - UPDATED TO NEW SPEC -->
+    <template id="tpl-3e">
+        <div class="clinical-form animate-[fadeIn_0.3s_ease-out] mb-6 border-l-4 border-l-red-600 ring-2 ring-red-100">
+            <div class="clinical-form-header bg-red-50 text-red-900 border-red-100">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-truck-medical"></i><span>CT Trauma
+                        Eligibility (Adults ≥18)</span></div>
+                <div class="text-xs bg-white px-2 py-1 rounded border border-red-200">Local Trauma Protocol</div>
+            </div>
+            <div class="clinical-form-body bg-slate-50/50">
+                <p class="text-sm font-semibold text-slate-700 mb-2 ml-1">Mechanism</p>
+                <div class="space-y-1 mb-4">
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Motorcycle / Cyclist / e-scooter impact > 15 mph</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Pedestrian impact > 15 mph</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Fall from horse</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Rollover or bullseye</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Fall > 2m or > 6 stairs</span></label>
+                </div>
+
+                <p class="text-sm font-semibold text-slate-700 mb-2 ml-1">Injuries</p>
+                <div class="space-y-1 mb-4">
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Significant injury in 2+ body regions</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Penetrating or Blast injury</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Open # / Amputation / Mangled limb</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Burns > 15% or special areas</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Suspected spinal cord injury</span></label>
+                </div>
+
+                <p class="text-sm font-semibold text-slate-700 mb-2 ml-1">Physiology</p>
+                <div class="space-y-1 mb-4">
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">SBP < 80 mmHg</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">GCS < 8</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">SpO₂ < 90% on O2</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Need for intubation / decompression</span></label>
+                </div>
+
+                <p class="text-sm font-semibold text-slate-700 mb-2 ml-1">Other</p>
+                <div class="space-y-1">
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Age > 65 / Frailty > 4</span></label>
+                    <label class="criteria-row"><input type="checkbox" class="criteria-check"><span
+                            class="criteria-label">Anticoagulation / Comorbidities / Non-verbal</span></label>
+                    <label class="criteria-row border-t border-slate-200 mt-2 pt-2 bg-red-50/50"><input type="checkbox"
+                            class="criteria-check"><span class="criteria-label font-bold text-red-700">Specific concerns
+                            but not meeting above (Justify below)</span></label>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- 3F (TRAUMA BODY CHILD) -->
+    <!-- 3F REMOVED -->
+
+    <template id="tpl-noform">
+        <div class="clinical-form animate-[fadeIn_0.3s_ease-out] mb-6 border-l-4 border-l-green-500">
+            <div class="clinical-form-header bg-green-50 text-green-900 border-green-100">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check"></i><span>Eligibility
+                        Confirmed</span></div>
+            </div>
+            <div class="clinical-form-body bg-white p-6">
+                <p class="font-bold text-green-800 text-lg mb-2">No specific eligibility form required.</p>
+                <p class="text-slate-600">Items selected do not trigger a specific trauma/NICE protocol based on current
+                    criteria. Please proceed to submit your request.</p>
+            </div>
+        </div>
+    </template>
+
+    <!-- SCRIPTS -->
+    <script>
+        // --- State Management ---
+        let currentWorkflow = ''; // 'wf1', 'wf2', 'wf3'
+        let selectedScans = [];
+        let patientType = 'adult'; // 'adult' or 'child'
+
+        function setPatientType(type) {
+            patientType = type;
+            const workflows = ['wf1', 'wf2', 'wf3'];
+            workflows.forEach(wf => {
+                const btnAdult = document.getElementById(`btn-adult-${wf}`);
+                const btnChild = document.getElementById(`btn-child-${wf}`);
+                if (btnAdult && btnChild) {
+                    if (type === 'adult') {
+                        btnAdult.className = "px-6 py-2 rounded-md text-sm font-bold transition bg-white text-slate-800 shadow-sm border border-slate-200 ring-1 ring-slate-100";
+                        btnChild.className = "px-6 py-2 rounded-md text-sm font-bold transition text-slate-500 hover:text-slate-700 hover:bg-slate-50";
+                    } else {
+                        btnAdult.className = "px-6 py-2 rounded-md text-sm font-bold transition text-slate-500 hover:text-slate-700 hover:bg-slate-50";
+                        btnChild.className = "px-6 py-2 rounded-md text-sm font-bold transition bg-white text-purple-700 shadow-sm border border-purple-200 ring-1 ring-purple-100";
+                    }
+                }
+            });
+        }
+
+        // --- Navigation ---
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+
+            // Highlight tab
+            const tabId = pageId.replace('page-', 'tab-');
+            if (document.getElementById(tabId)) document.getElementById(tabId).classList.add('active');
+
+            // Reset workflows when leaving
+            if (pageId.startsWith('page-workflow')) {
+                const wf = pageId.replace('page-workflow', 'wf');
+                initWorkflow(wf);
+            }
+        }
+
+        // --- Carousel Logic ---
+        function nextSlide(trackId) {
+            const track = document.getElementById(trackId);
+            track.style.transform = 'translateX(-100%)';
+            updateSteps(trackId, 1);
+            updateCarouselHeight(trackId, 1);
+        }
+        function prevSlide(trackId) {
+            const track = document.getElementById(trackId);
+            track.style.transform = 'translateX(0)';
+            updateSteps(trackId, 0);
+            setTimeout(() => updateCarouselHeight(trackId, 0), 100);
+        }
+        function nextSlide2(trackId) {
+            document.getElementById(trackId).style.transform = 'translateX(-200%)';
+            updateSteps(trackId, 2);
+            // Delay height update to ensure DOM render
+            setTimeout(() => updateCarouselHeight(trackId, 2), 100);
+        }
+        function updateSteps(trackId, index) {
+            const container = document.getElementById(trackId).parentNode.parentNode;
+            const dots = container.querySelectorAll('.step-dot');
+            const lines = container.querySelectorAll('.step-line');
+            dots.forEach((d, i) => i <= index ? d.classList.add('active') : d.classList.remove('active'));
+            lines.forEach((l, i) => i < index ? l.classList.add('active') : l.classList.remove('active'));
+        }
+
+        function updateCarouselHeight(trackId, slideIndex) {
+            const track = document.getElementById(trackId);
+            if (!track) return;
+            const slides = track.children;
+            const slide = slides[slideIndex];
+            if (slide) {
+                const height = slide.scrollHeight + 40;
+                track.parentNode.style.height = height + 'px';
+            }
+        }
+
+        // IMPROVED NAV
+        function goToSlide(trackId, index) {
+            const track = document.getElementById(trackId);
+            if (!track) return;
+            track.style.transform = `translateX(-${index * 100}%)`;
+            updateSteps(trackId, index);
+            setTimeout(() => updateCarouselHeight(trackId, index), 50);
+        }
+
+        // Legacy wrappers for compatibility if needed, or update calls
+        function nextSlide(trackId) { goToSlide(trackId, 1); }
+        function prevSlide(trackId) { goToSlide(trackId, 0); }
+        function nextSlide2(trackId) { goToSlide(trackId, 2); } // Still used in some places?
+
+
+        // --- Initialization ---
+        function initWorkflow(wf) {
+            currentWorkflow = wf;
+            selectedScans = [];
+
+            // Reset Carousel
+            const track = document.getElementById(`track-${wf}`);
+            if (track) {
+                track.style.transform = 'translateX(0)';
+                updateSteps(`track-${wf}`, 0);
+            }
+
+            // Init Height (timeout to ensure render)
+            setTimeout(() => updateCarouselHeight(`track-${wf}`, 0), 50);
+
+            // Reset Content
+            const orderContainer = document.getElementById(`order-form-${wf}`);
+            if (orderContainer) orderContainer.innerHTML = '';
+            const formsContainer = document.getElementById(`forms-container-${wf}`);
+            if (formsContainer) formsContainer.innerHTML = '';
+
+            // WF1 Auto-Start
+            if (wf === 'wf1') {
+                // Nothing pre-selected by default as per user request
+                selectedScans = [];
+                renderOrderForm('wf1', 'CT Trauma (Protocol)', true);
+            }
+        }
+
+        // --- WF2 & WF3 Setup ---
+        function setupWf2(scanType) {
+            selectedScans = [scanType];
+            renderOrderForm('wf2', `CT ${getScanName(scanType)}`, false);
+            nextSlide('track-wf2');
+        }
+
+        function setupWf3(scanType) {
+            selectedScans = [scanType]; // e.g. 'head' (but implied trauma context)
+            renderOrderForm('wf3', `CT ${getScanName(scanType)} (Trauma)`, false);
+            nextSlide('track-wf3');
+        }
+
+        function getScanName(type) {
+            const names = { 'head': 'Head', 'cspine': 'Cervical Spine', 'tspine': 'Thoracic Spine', 'lspine': 'Lumbar Spine', 'chest': 'Chest', 'abdomen': 'Abdomen', 'pelvis': 'Pelvis', 'cap': 'Chest/Abdomen/Pelvis' };
+            return names[type] || type;
+        }
+
+        // --- Render Order Form ---
+        function renderOrderForm(wf, title, isMulti) {
+            const container = document.getElementById(`order-form-${wf}`);
+            const tpl = document.getElementById('tpl-order-form');
+            container.innerHTML = '';
+            container.appendChild(tpl.content.cloneNode(true));
+
+            // Inject Scans
+            const scanContainer = container.querySelector('#dynamic-scans-container');
+            const traumaField = container.querySelector('#trauma-field-wf2');
+            const wrapper = container.querySelector('#form-content-wrapper');
+            const blurMessage = container.querySelector('#blur-message');
+
+            // Apply different blur logic based on workflow
+            if (wf === 'wf2') {
+                traumaField.classList.remove('hidden');
+                wrapper.classList.add('blur-active'); // Default Start Blurred
+                blurMessage.classList.add('visible');
+            } else if (wf === 'wf3') {
+                // Blur EVERYTHING including the scan list for consistency if requested "all of the order form"
+                // But user said "order form should be blurred", let's assume body content wrapper
+                wrapper.classList.add('blur-active');
+                blurMessage.classList.add('visible');
+            }
+
+            if (wf === 'wf1') {
+                // CT Trauma - Show Checkboxes
+                const allScans = ['head', 'cspine', 'chest', 'tspine', 'abdomen', 'lspine', 'pelvis'];
+                let html = '';
+                allScans.forEach(s => {
+                    const label = getScanName(s);
+                    // Check if selected (relevant if we reload or navigate)
+                    const checked = selectedScans.includes(s) ? 'checked' : '';
+                    html += `
+                        <div class="mb-2">
+                            <label class="flex items-center gap-2 font-bold text-slate-700">
+                                <input type="checkbox" value="${s}" ${checked} class="accent-blue-600" onchange="updateScanSelection('${wf}', this)"> CT ${label}
+                            </label>
+                            <div class="scan-notes ${checked ? 'visible' : ''}" id="notes-${wf}-${s}">
+                                <input type="text" placeholder="Specific clinical question for ${label}...">
+                            </div>
+                        </div>`;
+                });
+                scanContainer.innerHTML = html;
+            } else {
+                // Single Item
+                html = `
+                    <div class="bg-blue-50 p-3 rounded border border-blue-100 flex justify-between items-center">
+                        <span class="font-bold text-blue-900">CT ${getScanName(title.replace('CT ', '').replace(' (Trauma)', ''))} ${wf === 'wf3' ? 'Trauma' : ''}</span>
+                        <span class="text-xs text-blue-500 uppercase font-bold">Requested</span>
+                    </div>`;
+                scanContainer.innerHTML = html;
+            }
+
+            // Auto-populate Date/Time
+            const now = new Date();
+            const dateInput = container.querySelector('#req-date');
+            const timeInput = container.querySelector('#req-time');
+            if (dateInput) dateInput.valueAsDate = now;
+            if (timeInput) timeInput.value = now.toTimeString().substring(0, 5);
+        }
+
+        // Logic to unblur for WF2 when Trauma = YES
+        // Logic to unblur for WF2 when Trauma = YES
+        let wf2TraumaTrigger = false;
+        function checkTraumaTrigger(val) {
+            wf2TraumaTrigger = (val === 'yes');
+            const container = document.getElementById(`order-form-wf2`);
+            if (!container) return;
+            const blurMessage = container.querySelector('#blur-message');
+
+            // Logic: Content is blurred, but FOOTER/NEXT BUTTON must ALWAYS be accessible.
+            // If Yes -> Unblur content? User request: "buttons shouldn't be blurred so one can move forwards"
+            // So we ensure the FOOTER is never inside the blurred container, OR we unblur everything on interaction.
+            // Let's unblur the message overlay if Yes, to show the fields.
+            const wrapper = container.querySelector('#form-content-wrapper');
+            if (wrapper) {
+                if (wf2TraumaTrigger) {
+                    wrapper.classList.remove('blur-sm', 'pointer-events-none', 'select-none');
+                    if (blurMessage) blurMessage.style.display = 'none';
+                } else {
+                    // Default state logic if they click No? Maybe keep blurred to emphasize "Fast Track"?
+                    // User said: "buttons shouldn't be blurred". 
+                    // The footer is usually outside #form-content-wrapper in the template Tpl-order-form. 
+                    // Let's verify template structure. 
+                    // IF the template has footer INSIDE wrapper, that's the bug.
+                }
+            }
+        }
+
+        // --- Helper Functions ---
+        function updateScanSelection(wf, checkbox) {
+            const scan = checkbox.value;
+            const notes = document.getElementById(`notes-${wf}-${scan}`);
+
+            if (checkbox.checked) {
+                if (!selectedScans.includes(scan)) selectedScans.push(scan);
+                if (notes) notes.classList.add('visible');
+            } else {
+                selectedScans = selectedScans.filter(s => s !== scan);
+                if (notes) notes.classList.remove('visible');
+            }
+        }
+
+        function toggleLMP(val) {
+            const lmp = document.getElementById('lmp-container');
+            if (!lmp) return; // Guard
+            if (val === 'yes') {
+                lmp.classList.add('visible');
+            } else {
+                lmp.classList.remove('visible');
+            }
+        }
+
+
+
+        function filterOrders(searchText, listId) {
+            const list = document.getElementById(listId);
+            if (!list) return;
+            const buttons = list.querySelectorAll('button');
+            const term = searchText.toLowerCase();
+
+            buttons.forEach(btn => {
+                const text = btn.textContent.toLowerCase();
+                if (text.includes(term)) {
+                    btn.classList.remove('hidden');
+                    btn.setAttribute('style', 'display: flex'); // Ensure flex is restored
+                } else {
+                    btn.classList.add('hidden');
+                    btn.setAttribute('style', 'display: none');
+                }
+            });
+        }
+
+        // --- Logic Engine & Next Step ---
+        function processOrderAndNext() {
+            const wf = currentWorkflow;
+            const container = document.getElementById(`forms-container-${wf}`);
+            if (!container) return;
+            container.innerHTML = '';
+
+            let formsToShow = [];
+            const addForm = (id) => {
+                const t = document.getElementById(id);
+                if (t && !formsToShow.includes(id)) {
+                    formsToShow.push(id);
+                    container.appendChild(t.content.cloneNode(true));
+                }
+            };
+
+            // LOGIC - Defaulting to Adult for this prototype
+            const isAdult = (patientType === 'adult');
+
+            if (wf === 'wf1') {
+                // CT Trauma Request
+                if (selectedScans.includes('head')) addForm(isAdult ? 'tpl-3a' : 'tpl-3b');
+                if (selectedScans.includes('cspine')) addForm(isAdult ? 'tpl-3c' : 'tpl-3d');
+                const bodyParts = ['chest', 'tspine', 'abdomen', 'lspine', 'pelvis'];
+                if (selectedScans.some(s => bodyParts.includes(s))) {
+                    if (isAdult) addForm('tpl-3e');
+                }
+
+            } else if (wf === 'wf2') {
+                // Generic + Trauma Field
+                if (wf2TraumaTrigger) {
+                    if (selectedScans.includes('head')) addForm(isAdult ? 'tpl-3a' : 'tpl-3b');
+                    if (selectedScans.includes('cspine')) addForm(isAdult ? 'tpl-3c' : 'tpl-3d');
+                    const bodyParts = ['chest', 'tspine', 'abdomen', 'lspine', 'pelvis', 'cap'];
+                    if (selectedScans.some(s => bodyParts.includes(s))) {
+                        if (isAdult) addForm('tpl-3e');
+                    }
+                }
+
+            } else if (wf === 'wf3') {
+                // Specific Items
+                if (selectedScans.includes('head')) addForm(isAdult ? 'tpl-3a' : 'tpl-3b');
+                if (selectedScans.includes('cspine')) addForm(isAdult ? 'tpl-3c' : 'tpl-3d');
+                const bodyParts = ['chest', 'tspine', 'abdomen', 'lspine', 'pelvis', 'cap'];
+                if (selectedScans.some(s => bodyParts.includes(s))) addForm(isAdult ? 'tpl-3e' : 'tpl-3f');
+            }
+
+            // --- BRANCHING LOGIC ---
+            if (formsToShow.length === 0) {
+                // Scenario B: No Forms Requirement -> Skip to Success
+                showSuccess(wf, 3);
+            } else {
+                // Scenario A: Forms Required -> Add Submit Footer
+                const forms = container.querySelectorAll('.clinical-form');
+                if (forms.length > 0) {
+                    const lastForm = forms[forms.length - 1];
+                    const footer = document.createElement('div');
+                    footer.className = "clinical-form-footer flex justify-between bg-slate-50 p-4 border-t border-slate-100 rounded-b-xl";
+                    footer.innerHTML = `
+                         <button onclick="prevSlide('track-${wf}')" class="px-4 py-2 rounded text-slate-600 hover:bg-slate-200 font-medium text-sm transition">Back</button>
+                         <button onclick="showSuccess('${wf}', 4)" class="px-6 py-2 rounded bg-green-600 text-white font-bold hover:bg-green-700 shadow-sm transition text-sm flex items-center gap-2">
+                            Submit Request <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    `;
+                    lastForm.appendChild(footer);
+                }
+
+                // Move Slide (To 3)
+                nextSlide2(`track-${wf}`);
+            }
+        }
+
+        function showSuccess(wf, slideNum) {
+            // slideNum indicates TARGET slide for success content
+            // If 4: Success is in S4.
+            // If 3: Success is in S3.
+            const containerId = slideNum === 4 ? `success-container-${wf}` : `forms-container-${wf}`;
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            container.innerHTML = '';
+            container.appendChild(document.getElementById('tpl-success').content.cloneNode(true));
+
+            if (slideNum === 4) {
+                // Trigger move to Slide 4 (index 3)
+                goToSlide(`track-${wf}`, 3);
+            } else if (slideNum === 3) {
+                // Trigger move to Slide 3 (index 2)
+                goToSlide(`track-${wf}`, 2);
+            }
+        }
+
+        // Initial Chart
+        // Initial Chart (Aim: Compliance vs Time)
+        const ctx = document.getElementById('aimChart');
+        if (ctx) {
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Baseline', 'Phase 1 (Pilot)', 'Phase 2 (Night)', 'Phase 3 (Full)'],
+                    datasets: [{
+                        label: 'Vetting Compliance (%)',
+                        data: [15, 60, 85, 98],
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#2563eb',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Processing Time (min)',
+                        data: [25, 20, 10, 5],
+                        borderColor: '#94a3b8',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        yAxisID: 'y1',
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#94a3b8'
+                    }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: {
+                                size: 13
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 11
+                                },
+                                color: '#64748b'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: '#e2e8f0',
+                                borderDash: [2, 2]
+                            },
+                            ticks: {
+                                color: '#64748b'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Compliance %',
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                },
+                                color: '#2563eb'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            max: 30,
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                color: '#64748b'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Time (min)',
+                                font: {
+                                    size: 11,
+                                    weight: 'bold'
+                                },
+                                color: '#94a3b8'
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+        // --- Modal Logic ---
+        function openGuideline(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+        function closeGuideline(id) {
+            const modal = document.getElementById(id);
+            if (modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Close on ESC
+        document.addEventListener('keydown', function (event) {
+            if (event.key === "Escape") {
+                ['modal-head-adult', 'modal-head-child', 'modal-cspine-adult', 'modal-cspine-child', 'modal-trauma'].forEach(id => closeGuideline(id));
+            }
+        });
+    </script>
+
+</body>
+
+</html>
