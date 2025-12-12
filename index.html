@@ -425,12 +425,13 @@
     <!-- Header (Sticky) -->
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3 mr-8">
-                <div class="bg-blue-600 w-8 h-8 rounded flex items-center justify-center"><i
-                        class="fa-solid fa-notes-medical text-white"></i></div>
+            <div class="flex items-center gap-2 md:gap-3 mr-2 md:mr-8 shrink-0">
+                <div class="bg-blue-600 w-6 h-6 md:w-8 md:h-8 rounded flex items-center justify-center"><i
+                        class="fa-solid fa-notes-medical text-white text-xs md:text-base"></i></div>
                 <div>
-                    <h1 class="font-bold text-lg leading-tight tracking-wide">Digitising Trauma Scans Vetting</h1>
-                    <p class="text-[10px] text-slate-400 uppercase tracking-wider">Implementation Plan & Prototype</p>
+                    <h1 class="font-bold text-sm md:text-lg leading-tight tracking-wide">Digitising Trauma Scans</h1>
+                    <p class="text-[8px] md:text-[10px] text-slate-400 uppercase tracking-wider hidden sm:block">
+                        Implementation Plan & Prototype</p>
                 </div>
             </div>
             <nav class="flex h-full space-x-1 overflow-x-auto">
@@ -561,8 +562,8 @@
                 </div>
 
                 <!-- 2. Strategic Aims (with Chart) -->
-                <div class="bg-slate-50 rounded-3xl p-8 md:p-12 mb-20 border border-slate-200">
-                    <div class="grid lg:grid-cols-12 gap-12 items-center">
+                <div class="bg-slate-50 rounded-3xl p-4 md:p-12 mb-20 border border-slate-200">
+                    <div class="grid lg:grid-cols-12 gap-6 lg:gap-12 items-center">
                         <div class="lg:col-span-5">
                             <div class="inline-block text-indigo-600 font-bold mb-2 uppercase text-sm tracking-wide">
                                 Impact Analysis</div>
@@ -580,12 +581,13 @@
                                 </div>
                                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
                                     <div class="text-3xl font-black text-indigo-600 mb-1">-5m</div>
-                                    <div class="text-sm font-medium text-slate-500 uppercase tracking-wide">Time Per
+                                    <div class="text-xs md:text-sm font-medium text-slate-500 uppercase tracking-wide">
+                                        Time Per
                                         Request</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                        <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-3 md:p-6">
                             <canvas id="aimChart" height="250"></canvas>
                         </div>
                     </div>
