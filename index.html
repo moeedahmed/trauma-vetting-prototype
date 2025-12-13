@@ -775,24 +775,7 @@
                                         <div class="font-bold text-slate-800">CT Cervical Spine</div>
                                     </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <button onclick="setupWf2('tspine')" class="search-item">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
-                                            <i class="fa-solid fa-bone"></i>
-                                        </div>
-                                        <div class="font-bold text-slate-800">CT Thoracic Spine</div>
-                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
-                                </button>
-                                <button onclick="setupWf2('lspine')" class="search-item">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
-                                            <i class="fa-solid fa-bone"></i>
-                                        </div>
-                                        <div class="font-bold text-slate-800">CT Lumbar Spine</div>
-                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
-                                </button>
+                                <!-- Old T/L Spine removed -->
                                 <button onclick="setupWf2('chest')" class="search-item">
                                     <div class="flex items-center gap-3">
                                         <div
@@ -919,26 +902,7 @@
                                         </div>
                                     </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
                                 </button>
-                                <button onclick="setupWf3('tspine')" class="search-item">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
-                                            <i class="fa-solid fa-bone"></i>
-                                        </div>
-                                        <div class="font-bold text-purple-900">CT Thoracic Spine Trauma
-                                        </div>
-                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
-                                </button>
-                                <button onclick="setupWf3('lspine')" class="search-item">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
-                                            <i class="fa-solid fa-bone"></i>
-                                        </div>
-                                        <div class="font-bold text-purple-900">CT Lumbar Spine Trauma
-                                        </div>
-                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
-                                </button>
+                                <!-- Old T/L Spine removed -->
                                 <button onclick="setupWf3('chest')" class="search-item">
                                     <div class="flex items-center gap-3">
                                         <div
@@ -1805,7 +1769,7 @@
         }
 
         function getScanName(type) {
-            const names = { 'head': 'Head', 'cspine': 'Cervical Spine', 'tspine': 'Thoracic Spine', 'lspine': 'Lumbar Spine', 'chest': 'Chest', 'abdomen': 'Abdomen', 'pelvis': 'Pelvis', 'cap': 'Chest/Abdomen/Pelvis' };
+            const names = { 'head': 'Head', 'cspine': 'Cervical Spine', 'chest': 'Chest', 'abdomen': 'Abdomen', 'pelvis': 'Pelvis', 'cap': 'Chest/Abdomen/Pelvis' };
             return names[type] || type;
         }
 
@@ -1836,7 +1800,7 @@
 
             if (wf === 'wf1') {
                 // CT Trauma - Show Checkboxes
-                const allScans = ['head', 'cspine', 'chest', 'tspine', 'abdomen', 'lspine', 'pelvis'];
+                const allScans = ['head', 'cspine', 'chest', 'abdomen', 'pelvis'];
                 let html = '';
                 allScans.forEach(s => {
                     const label = getScanName(s);
@@ -1964,11 +1928,23 @@
 
             if (wf === 'wf1') {
                 // CT Trauma Request
-                if (selectedScans.includes('head')) addForm(isAdult ? 'tpl-3a' : 'tpl-3b');
-                if (selectedScans.includes('cspine')) addForm(isAdult ? 'tpl-3c' : 'tpl-3d');
-                const bodyParts = ['chest', 'tspine', 'abdomen', 'lspine', 'pelvis'];
-                if (selectedScans.some(s => bodyParts.includes(s))) {
-                    if (isAdult) addForm('tpl-3e');
+                const bodyParts = ['chest', 'abdomen', 'pelvis'];
+                const isBodyTrauma = selectedScans.some(s => bodyParts.includes(s));
+
+                if (isAdult) {
+                    if (isBodyTrauma) {
+                        // Major Trauma Protocol -> Only 3e (supersedes Head/C-Spine)
+                        addForm('tpl-3e');
+                    } else {
+                        // Isolated scans
+                        if (selectedScans.includes('head')) addForm('tpl-3a');
+                        if (selectedScans.includes('cspine')) addForm('tpl-3c');
+                    }
+                } else {
+                    // Child Logic
+                    if (selectedScans.includes('head')) addForm('tpl-3b');
+                    if (selectedScans.includes('cspine')) addForm('tpl-3d');
+                    // Child Body Trauma -> No forms (as per previous instructions)
                 }
 
             } else if (wf === 'wf2') {
@@ -1986,7 +1962,7 @@
                 // Specific Items
                 if (selectedScans.includes('head')) addForm(isAdult ? 'tpl-3a' : 'tpl-3b');
                 if (selectedScans.includes('cspine')) addForm(isAdult ? 'tpl-3c' : 'tpl-3d');
-                const bodyParts = ['chest', 'tspine', 'abdomen', 'lspine', 'pelvis', 'cap'];
+                const bodyParts = ['chest', 'abdomen', 'pelvis', 'cap'];
                 if (selectedScans.some(s => bodyParts.includes(s))) addForm(isAdult ? 'tpl-3e' : 'tpl-3f');
             }
 
