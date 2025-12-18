@@ -742,74 +742,162 @@
                             <p class="text-slate-500 mb-4">Search for standard CT scans.</p>
 
                             <!-- PATIENT TYPE TOGGLE -->
-                            <div class="flex justify-center mb-6">
-                                <div class="bg-slate-100 p-1 rounded-lg flex items-center">
-                                    <button onclick="setPatientType('adult')" id="btn-adult-wf2"
-                                        class="px-6 py-2 rounded-md text-sm font-bold transition bg-white text-slate-800 shadow-sm border border-slate-200 ring-1 ring-slate-100">Adult</button>
-                                    <button onclick="setPatientType('child')" id="btn-child-wf2"
-                                        class="px-6 py-2 rounded-md text-sm font-bold transition text-slate-500 hover:text-slate-700 hover:bg-slate-50">Child</button>
-                                </div>
-                            </div>
+                            <!-- PATIENT TYPE TOGGLE REMOVED FOR WF2 -->
                             <div class="w-full relative mb-4"><input type="text"
                                     class="w-full p-4 border border-slate-300 rounded-lg text-lg pl-12 outline-none"
                                     placeholder="Search..." value="CT" onkeyup="filterOrders(this.value, 'list-wf2')"><i
                                     class="fa-solid fa-magnifying-glass absolute left-4 top-5 text-slate-400"></i>
                             </div>
-                            <div id="list-wf2" class="w-full text-left space-y-2 max-h-[300px] overflow-y-auto pr-2">
-                                <!-- Expanded List -->
-                                <button onclick="setupWf2('head')" class="search-item">
+                            <div id="list-wf2" class="w-full text-left space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                                <!-- ADULT SECTION -->
+                                <div
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2 sticky top-0 bg-white/95 backdrop-blur py-2 z-10 border-b border-slate-100">
+                                    Adult Scans</div>
+
+                                <button onclick="setupWf2('head', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-brain"></i>
                                         </div>
-                                        <div class="font-bold text-slate-800">CT Head</div>
+                                        <div class="font-bold text-slate-800 group-hover:text-slate-900 transition">CT
+                                            Head (Adult)</div>
                                     </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <button onclick="setupWf2('cspine')" class="search-item">
+                                <button onclick="setupWf2('cspine', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-bone"></i>
                                         </div>
-                                        <div class="font-bold text-slate-800">CT Cervical Spine</div>
+                                        <div class="font-bold text-slate-800 group-hover:text-slate-900 transition">CT
+                                            Cervical Spine (Adult)</div>
                                     </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <!-- Old T/L Spine removed -->
-                                <button onclick="setupWf2('chest')" class="search-item">
+                                <button onclick="setupWf2('chest', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-lungs"></i>
                                         </div>
-                                        <div class="font-bold text-slate-800">CT Chest</div>
+                                        <div class="font-bold text-slate-800 group-hover:text-slate-900 transition">CT
+                                            Chest (Adult)</div>
                                     </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <button onclick="setupWf2('abdomen')" class="search-item">
+                                <button onclick="setupWf2('abdomen', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-user-md"></i>
                                         </div>
-                                        <div class="font-bold text-slate-800">CT Abdomen</div>
+                                        <div class="font-bold text-slate-800 group-hover:text-slate-900 transition">CT
+                                            Abdomen (Adult)</div>
                                     </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <button onclick="setupWf2('pelvis')" class="search-item">
+                                <button onclick="setupWf2('pelvis', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-child-reaching"></i>
                                         </div>
-                                        <div class="font-bold text-slate-800">CT Pelvis</div>
+                                        <div class="font-bold text-slate-800 group-hover:text-slate-900 transition">CT
+                                            Pelvis (Adult)</div>
                                     </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <button onclick="setupWf2('cap')" class="search-item">
+                                <button onclick="setupWf2('cap', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-slate-600 transition">
                                             <i class="fa-solid fa-layer-group"></i>
                                         </div>
-                                        <div class="font-bold text-slate-800">CT Chest/Abdomen/Pelvis</div>
+                                        <div class="font-bold text-slate-800 group-hover:text-slate-900 transition">CT
+                                            Chest / Abdomen / Pelvis (Adult)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('wholebody', 'adult')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-slate-500 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-slate-600 transition">
+                                            <i class="fa-solid fa-person-burst"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-slate-900 transition">CT
+                                            Whole Body (Adult)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+
+                                <!-- CHILD SECTION -->
+                                <div
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-6 sticky top-0 bg-white/95 backdrop-blur py-2 z-10 border-b border-slate-100">
+                                    Paediatric Scans</div>
+
+                                <button onclick="setupWf2('head', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-teal-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-teal-700 transition">
+                                            <i class="fa-solid fa-brain"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-teal-700 transition">CT
+                                            Head (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('cspine', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-teal-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-teal-700 transition">
+                                            <i class="fa-solid fa-bone"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-teal-700 transition">CT
+                                            Cervical Spine (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('chest', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-teal-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-teal-700 transition">
+                                            <i class="fa-solid fa-lungs"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-teal-700 transition">CT
+                                            Chest (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('abdomen', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-teal-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-teal-700 transition">
+                                            <i class="fa-solid fa-user-md"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-teal-700 transition">CT
+                                            Abdomen (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('pelvis', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-teal-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-teal-700 transition">
+                                            <i class="fa-solid fa-child-reaching"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-teal-700 transition">CT
+                                            Pelvis (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('cap', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-teal-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-teal-700 transition">
+                                            <i class="fa-solid fa-layer-group"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-teal-700 transition">CT
+                                            Chest / Abdomen / Pelvis (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf2('wholebody', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-teal-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-teal-700 transition">
+                                            <i class="fa-solid fa-person-burst"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-teal-700 transition">CT
+                                            Whole Body (Child)</div>
                                     </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
                             </div>
@@ -868,76 +956,165 @@
                             <p class="text-slate-500 mb-4">Search for specific Trauma entries.</p>
 
                             <!-- PATIENT TYPE TOGGLE -->
-                            <div class="flex justify-center mb-6">
-                                <div class="bg-slate-100 p-1 rounded-lg flex items-center">
-                                    <button onclick="setPatientType('adult')" id="btn-adult-wf3"
-                                        class="px-6 py-2 rounded-md text-sm font-bold transition bg-white text-slate-800 shadow-sm border border-slate-200 ring-1 ring-slate-100">Adult</button>
-                                    <button onclick="setPatientType('child')" id="btn-child-wf3"
-                                        class="px-6 py-2 rounded-md text-sm font-bold transition text-slate-500 hover:text-slate-700 hover:bg-slate-50">Child</button>
-                                </div>
-                            </div>
+                            <!-- PATIENT TYPE TOGGLE REMOVED FOR WF3 -->
                             <div class="w-full relative mb-4"><input type="text"
                                     class="w-full p-4 border border-slate-300 rounded-lg text-lg pl-12 outline-none"
                                     placeholder="Search..." value="Trauma"
                                     onkeyup="filterOrders(this.value, 'list-wf3')"><i
                                     class="fa-solid fa-magnifying-glass absolute left-4 top-5 text-slate-400"></i>
                             </div>
-                            <div id="list-wf3" class="w-full text-left space-y-2 max-h-[300px] overflow-y-auto pr-2">
-                                <button onclick="setupWf3('head')" class="search-item">
+                            <!-- Explicit Adult/Child List (No Toggle) -->
+                            <div id="list-wf3" class="w-full text-left space-y-2 max-h-[400px] overflow-y-auto pr-2">
+                                <!-- ADULT SECTION -->
+                                <div
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2 sticky top-0 bg-white/95 backdrop-blur py-2 z-10 border-b border-slate-100">
+                                    Adult Trauma Scans</div>
+
+                                <button onclick="setupWf3('head', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-blue-700 transition">
                                             <i class="fa-solid fa-brain"></i>
                                         </div>
-                                        <div class="font-bold text-purple-900">CT Head Trauma</div>
-                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                        <div class="font-bold text-slate-800 group-hover:text-blue-700 transition">CT
+                                            Trauma Head (Adult)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <button onclick="setupWf3('cspine')" class="search-item">
+                                <button onclick="setupWf3('cspine', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-blue-700 transition">
                                             <i class="fa-solid fa-bone"></i>
                                         </div>
-                                        <div class="font-bold text-purple-900">CT Cervical Spine Trauma
-                                        </div>
-                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                        <div class="font-bold text-slate-800 group-hover:text-blue-700 transition">CT
+                                            Trauma Cervical Spine (Adult)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <!-- Old T/L Spine removed -->
-                                <button onclick="setupWf3('chest')" class="search-item">
+                                <button onclick="setupWf3('chest', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-blue-700 transition">
                                             <i class="fa-solid fa-lungs"></i>
                                         </div>
-                                        <div class="font-bold text-purple-900">CT Chest Trauma</div>
-                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                        <div class="font-bold text-slate-800 group-hover:text-blue-700 transition">CT
+                                            Trauma Chest (Adult)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <button onclick="setupWf3('abdomen')" class="search-item">
+                                <button onclick="setupWf3('abdomen', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-blue-700 transition">
                                             <i class="fa-solid fa-user-md"></i>
                                         </div>
-                                        <div class="font-bold text-purple-900">CT Abdomen Trauma</div>
-                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                        <div class="font-bold text-slate-800 group-hover:text-blue-700 transition">CT
+                                            Trauma Abdomen (Adult)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <button onclick="setupWf3('pelvis')" class="search-item">
+                                <button onclick="setupWf3('pelvis', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-blue-700 transition">
                                             <i class="fa-solid fa-child-reaching"></i>
                                         </div>
-                                        <div class="font-bold text-purple-900">CT Pelvis Trauma</div>
-                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                        <div class="font-bold text-slate-800 group-hover:text-blue-700 transition">CT
+                                            Trauma Pelvis (Adult)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
-                                <button onclick="setupWf3('cap')" class="search-item">
+                                <button onclick="setupWf3('cap', 'adult')" class="search-item group">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center">
+                                            class="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-blue-700 transition">
                                             <i class="fa-solid fa-layer-group"></i>
                                         </div>
-                                        <div class="font-bold text-purple-900">CT Chest/Abdomen/Pelvis Trauma</div>
-                                    </div><i class="fa-solid fa-chevron-right text-purple-300"></i>
+                                        <div class="font-bold text-slate-800 group-hover:text-blue-700 transition">CT
+                                            Trauma Chest / Abdomen / Pelvis (Adult)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf3('wholebody', 'adult')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-blue-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-blue-700 transition">
+                                            <i class="fa-solid fa-person-burst"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-blue-700 transition">CT
+                                            Trauma Whole Body (Adult)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+
+                                <!-- CHILD SECTION -->
+                                <div
+                                    class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-6 sticky top-0 bg-white/95 backdrop-blur py-2 z-10 border-b border-slate-100">
+                                    Paediatric Trauma Scans</div>
+
+                                <button onclick="setupWf3('head', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-purple-700 transition">
+                                            <i class="fa-solid fa-brain"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-purple-700 transition">CT
+                                            Trauma Head (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf3('cspine', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-purple-700 transition">
+                                            <i class="fa-solid fa-bone"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-purple-700 transition">CT
+                                            Trauma Cervical Spine (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf3('chest', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-purple-700 transition">
+                                            <i class="fa-solid fa-lungs"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-purple-700 transition">CT
+                                            Trauma Chest (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf3('abdomen', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-purple-700 transition">
+                                            <i class="fa-solid fa-user-md"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-purple-700 transition">CT
+                                            Trauma Abdomen (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf3('pelvis', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-purple-700 transition">
+                                            <i class="fa-solid fa-child-reaching"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-purple-700 transition">CT
+                                            Trauma Pelvis (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf3('cap', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-purple-700 transition">
+                                            <i class="fa-solid fa-layer-group"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-purple-700 transition">CT
+                                            Trauma Chest / Abdomen / Pelvis (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
+                                </button>
+                                <button onclick="setupWf3('wholebody', 'child')" class="search-item group">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="bg-purple-600 text-white w-8 h-8 rounded flex items-center justify-center group-hover:bg-purple-700 transition">
+                                            <i class="fa-solid fa-person-burst"></i>
+                                        </div>
+                                        <div class="font-bold text-slate-800 group-hover:text-purple-700 transition">CT
+                                            Trauma Whole Body (Child)</div>
+                                    </div><i class="fa-solid fa-chevron-right text-slate-300"></i>
                                 </button>
                             </div>
                         </div>
@@ -1756,20 +1933,30 @@
         }
 
         // --- WF2 & WF3 Setup ---
-        function setupWf2(scanType) {
+        function setupWf2(scanType, patientCat) {
             selectedScans = [scanType];
-            renderOrderForm('wf2', `CT ${getScanName(scanType)}`, false);
+            // Set global patient type
+            patientType = patientCat || 'adult';
+            const pLabel = (patientType === 'child') ? '(Child)' : '(Adult)';
+            renderOrderForm('wf2', `CT ${getScanName(scanType)} ${pLabel}`, false);
             nextSlide('track-wf2');
         }
 
-        function setupWf3(scanType) {
-            selectedScans = [scanType]; // e.g. 'head' (but implied trauma context)
-            renderOrderForm('wf3', `CT ${getScanName(scanType)} (Trauma)`, false);
+        function setupWf3(scanType, patientCat) {
+            selectedScans = [scanType];
+            // Set global patient type for logic engine
+            patientType = patientCat || 'adult';
+
+            // Format Title
+            const pLabel = (patientType === 'child') ? '(Child)' : '(Adult)';
+            const sName = getScanName(scanType);
+            // "CT Trauma Chest (Adult)" logic
+            renderOrderForm('wf3', `CT Trauma ${sName} ${pLabel}`, false);
             nextSlide('track-wf3');
         }
 
         function getScanName(type) {
-            const names = { 'head': 'Head', 'cspine': 'Cervical Spine', 'chest': 'Chest', 'abdomen': 'Abdomen', 'pelvis': 'Pelvis', 'cap': 'Chest/Abdomen/Pelvis' };
+            const names = { 'head': 'Head', 'cspine': 'Cervical Spine', 'chest': 'Chest', 'abdomen': 'Abdomen', 'pelvis': 'Pelvis', 'cap': 'Chest / Abdomen / Pelvis', 'wholebody': 'Whole Body' };
             return names[type] || type;
         }
 
@@ -1948,22 +2135,56 @@
                 }
 
             } else if (wf === 'wf2') {
-                // Generic + Trauma Field
+                // Generic + Trauma Field (Explicit Patient Logic)
                 if (wf2TraumaTrigger) {
-                    if (selectedScans.includes('head')) addForm(isAdult ? 'tpl-3a' : 'tpl-3b');
-                    if (selectedScans.includes('cspine')) addForm(isAdult ? 'tpl-3c' : 'tpl-3d');
-                    const bodyParts = ['chest', 'tspine', 'abdomen', 'lspine', 'pelvis', 'cap'];
-                    if (selectedScans.some(s => bodyParts.includes(s))) {
-                        if (isAdult) addForm('tpl-3e');
+                    if (isAdult) {
+                        // Adult Logic
+                        if (selectedScans.includes('head')) addForm('tpl-3a');
+                        if (selectedScans.includes('cspine')) addForm('tpl-3c');
+                        // Body -> Adult Trauma
+                        const bodyParts = ['chest', 'abdomen', 'pelvis', 'cap', 'wholebody'];
+                        if (selectedScans.some(s => bodyParts.includes(s))) addForm('tpl-3e');
+                    } else {
+                        // Child Logic
+                         if (selectedScans.includes('head')) addForm('tpl-3b');
+                         if (selectedScans.includes('cspine')) addForm('tpl-3d');
+                         // Body -> Child (No form yet)
+                         const bodyParts = ['chest', 'abdomen', 'pelvis', 'cap', 'wholebody'];
+                         // if bodyParts, no form added, falls to Success
                     }
                 }
 
             } else if (wf === 'wf3') {
-                // Specific Items
-                if (selectedScans.includes('head')) addForm(isAdult ? 'tpl-3a' : 'tpl-3b');
-                if (selectedScans.includes('cspine')) addForm(isAdult ? 'tpl-3c' : 'tpl-3d');
-                const bodyParts = ['chest', 'abdomen', 'pelvis', 'cap'];
-                if (selectedScans.some(s => bodyParts.includes(s))) addForm(isAdult ? 'tpl-3e' : 'tpl-3f');
+                // Specific Items (Now with Adult/Child explicit separate items)
+                if (isAdult) {
+                    // Logic: If any "Body" scan (Chest, Abdo, Pelvis, CAP, WholeBody) -> Trauma Eligibility Only (3e)
+                    // This supersedes Head/Cspine logic if both are present (though in WF3 it is single select usually)
+                    const bodyParts = ['chest', 'abdomen', 'pelvis', 'cap', 'wholebody'];
+                    if (selectedScans.some(s => bodyParts.includes(s))) {
+                        addForm('tpl-3e');
+                    } else {
+                        // Head or C-Spine Isolation
+                        if (selectedScans.includes('head')) addForm('tpl-3a');
+                        if (selectedScans.includes('cspine')) addForm('tpl-3c');
+                    }
+                } else {
+                    // Child Logic
+                    // "If you select child... it just does not give any eligibility... until we have that set in"
+                    // But Head/Cspine might still have their forms? User said: "they should also follow the same pathway"
+                    // "separate entries... separate for paediatric... follow current workflow... if child... just does not give any eligibility"
+                    // implies skipping forms for body parts. 
+                    // Let's keep Head/Cspine forms if user wants them? 
+                    // User says: "If combination includes CT abdomen... should just show trauma eligibility... children scan... separate... does not give any eligibility"
+
+                    const bodyParts = ['chest', 'abdomen', 'pelvis', 'cap', 'wholebody'];
+                    if (selectedScans.some(s => bodyParts.includes(s))) {
+                        // No forms for child body trauma yet -> Empty list -> Falls through to Success
+                    } else {
+                        // Head/Cspine Child Forms (Existing)
+                        if (selectedScans.includes('head')) addForm('tpl-3b');
+                        if (selectedScans.includes('cspine')) addForm('tpl-3d');
+                    }
+                }
             }
 
             // --- BRANCHING LOGIC ---
